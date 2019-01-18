@@ -3,7 +3,7 @@ import requests, json
 from time import sleep
 
 
-emailList = ['mitchell.anderson@colorado.edu', 'mian7629@colorado.edu']
+emailList = ['test@test.com', 'test2@test.com']
 
 headers = {
     'User-Agent': 'HIBP Account Monitoring'

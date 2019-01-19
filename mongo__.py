@@ -58,7 +58,7 @@ def checkExistingBreachRecords(email, breach):
 # If there won't be a duplicate, the record is added to the collection
 def insertMongo(email, breach, domain, verified, dataType):
     queryResult = checkExistingBreachRecords(email, breach)
-    if not queryResult:
+    if queryResult:
         return "{} Already has a record for {}. Not adding to database".format(email, breach)
     else:
         try:

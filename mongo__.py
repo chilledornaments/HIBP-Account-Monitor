@@ -2,14 +2,15 @@ from pymongo import MongoClient
 
 MongoHost = "mongodb://localhost:27017"
 client = MongoClient(MongoHost)
-MongoDB_ = client.HIBP
-Collection_ = "Data"#. So client.HIBP.Data
+BreachInfoDB = client.HIBP
+BreachInfoCollection = "Data"#. So client.HIBP.Data
 # Change collection to BreachData
 
 emailDB = client.HIBP_Emails
 emailDB_Collection = "Emails"
 
-
+# queryExistingUsers function is used by newUserRecord
+# To check if an email already exists in the database
 def queryExistingUsers(email):
     userQuery = emailDB.emailDB_Collection.find_one({'email': email})
     if str(userQuery) == "None":
@@ -17,6 +18,7 @@ def queryExistingUsers(email):
     else:
         return False
     
+# displayAllEmails is used by monitorAccount.py to check which emails to search for
 def displayAllEmails():
     resultList = []
     result = emailDB.emailDB_Collection.distinct('email')
@@ -24,6 +26,7 @@ def displayAllEmails():
         resultList.append(email)
     return resultList
 
+# newUserRecord is used by initialMongoImport.py to add emails to emailDB
 def newUserRecord(email):
     queryResult = queryExistingUsers(email)
 
@@ -37,18 +40,33 @@ def newUserRecord(email):
     else:
         return "Record {} already exists".format(email)
 
+# checkExistingBreachRecords is used by insertMongo to see if a breach has already been added
+# This avoids duplicating data
 def checkExistingBreachRecords(email, breach):
     try:
-        MongoDB_.Collection_.find_one({'email': email, 'breach': breach})
-        return True
+        existingBreachCheck = BreachInfoDB.BreachInfoCollection.find_one({'email': email, 'breach': breach})
+        if existingBreachCheck != "None":
+            return True
+        else:
+            return False
     except Exception as e:
         print(e)
         return False
 
+# insertMongo is the heart of monitorAccount.py 
+# It checks for an existing email:breach record to avoid duplicates
+# If there won't be a duplicate, the record is added to the collection
 def insertMongo(email, breach, domain, verified, dataType):
-           
+    queryResult = checkExistingBreachRecords(email, breach)
+    if queryResult:
+        return "{} Already has a record for {}. Not adding to database".format(email, breach)
+    else:
+        try:
+            BreachInfoDB.BreachInfoCollection.insert_one({'email': email, 'breach': breach, 'domain': domain, 'verified': verified, 'dataType': dataType})
+            return "Success"
+        except Exception as e:
+            return str(e)
 
-    print("hg")
 
 
 

@@ -2,8 +2,6 @@
 import requests, json, sys
 from time import sleep
 import mongo__
-from mongo__ import MongoDB_
-
 
 def QueryAPI():
 
@@ -18,18 +16,21 @@ def QueryAPI():
 
 
         if r.status_code == 404:
+            # There isn't a breach associated with this email
             pass
         elif r.status_code == 429:
             print("Making too many requests. Waiting 30 seconds")
             sleep(30)
         
         else:
-            print(email)
             jsonLoaded = json.loads(r.text)
             for breach in jsonLoaded:
                 
                 breachName = breach['Name']
-                print(breachName)
+                domain = breach['Domain']
+                verified = breach['IsVerified']
+                dataType = breach['DataClasses']
+                mongo__.insertMongo(email, breachName, domain, verified, dataType)
 
 
 if __name__ == '__main__':

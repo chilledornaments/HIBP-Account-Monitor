@@ -22,7 +22,7 @@ def queryExistingUsers(email):
 def displayAllEmails():
     resultList = []
     result = emailDB.emailDB_Collection.distinct('email')
-    for email in result['email']:
+    for email in result:
         resultList.append(email)
     return resultList
 
@@ -45,10 +45,10 @@ def newUserRecord(email):
 def checkExistingBreachRecords(email, breach):
     try:
         existingBreachCheck = BreachInfoDB.BreachInfoCollection.find_one({'email': email, 'breach': breach})
-        if existingBreachCheck != "None":
-            return True
-        else:
+        if existingBreachCheck == "None":
             return False
+        else:
+            return True
     except Exception as e:
         print(e)
         return False
@@ -58,7 +58,7 @@ def checkExistingBreachRecords(email, breach):
 # If there won't be a duplicate, the record is added to the collection
 def insertMongo(email, breach, domain, verified, dataType):
     queryResult = checkExistingBreachRecords(email, breach)
-    if queryResult:
+    if not queryResult:
         return "{} Already has a record for {}. Not adding to database".format(email, breach)
     else:
         try:
@@ -66,8 +66,4 @@ def insertMongo(email, breach, domain, verified, dataType):
             return "Success"
         except Exception as e:
             return str(e)
-
-
-
-
-    
+   
